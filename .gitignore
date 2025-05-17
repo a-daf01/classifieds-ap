@@ -8,3 +8,6 @@ dist/
 
 # Ignore local environment files
 .env
+
+# Ignore Prisma Client outputs
+/backend/src/prisma/client
