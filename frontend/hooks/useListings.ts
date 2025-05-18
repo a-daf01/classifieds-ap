@@ -1,4 +1,3 @@
-// frontend/hooks/useListings.ts
 import { useQuery } from '@tanstack/react-query';
 
 export interface Listing {
@@ -7,7 +6,6 @@ export interface Listing {
   description: string;
   price: number;
   createdAt: string;
-  imageUrl?: string; 
 }
 
 export function useListings() {
@@ -18,5 +16,7 @@ export function useListings() {
       if (!res.ok) throw new Error('Failed to fetch listings');
       return (await res.json()) as Listing[];
     },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }

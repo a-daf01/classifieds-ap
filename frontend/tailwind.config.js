@@ -1,9 +1,9 @@
-// frontend/tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './app/**/*.{js,ts,jsx,tsx}',         // for app directory
-    './components/**/*.{js,ts,jsx,tsx}',  // for shared components
-    './pages/**/*.{js,ts,jsx,tsx}',       // if you still have a pages/ folder
+    './app/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
+    './hooks/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {

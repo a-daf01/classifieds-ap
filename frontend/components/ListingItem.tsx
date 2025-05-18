@@ -1,4 +1,3 @@
-// frontend/components/ListingItem.tsx
 'use client';
 
 import React, { useState, FormEvent } from 'react';
@@ -21,7 +20,6 @@ export function ListingItem({ listing }: ListingItemProps) {
     price: listing.price,
   });
 
-  // HANDLE FORM SUBMIT
   const handleSave = (e: FormEvent) => {
     e.preventDefault();
     editMutation.mutate({ id: listing.id, data: form });
@@ -67,11 +65,6 @@ export function ListingItem({ listing }: ListingItemProps) {
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden relative">
-      <img
-        src={listing.imageUrl ?? '/placeholder.jpg'}
-        alt={listing.title}
-        className="w-full h-48 object-cover"
-      />
       <div className="p-4">
         <h3 className="text-lg font-semibold">{listing.title}</h3>
         <p className="text-gray-600 truncate">{listing.description}</p>
