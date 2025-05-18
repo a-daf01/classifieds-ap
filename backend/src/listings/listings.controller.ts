@@ -1,47 +1,49 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
-  Body,
-  Param,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, UseInterceptors, UploadedFiles, ParseIntPipe } from '@nestjs/common';
 import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
-import { Listing } from '@prisma/client';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('listings')
 export class ListingsController {
   constructor(private readonly listingsService: ListingsService) {}
 
+  @Post()
+  create(@Body() createListingDto: CreateListingDto) {
+    return this.listingsService.create(createListingDto);
+  }
+
   @Get()
-  findAll(): Promise<Listing[]> {
+  findAll() {
     return this.listingsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Listing> {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.listingsService.findOne(id);
-  }
-
-  @Post()
-  create(@Body() dto: CreateListingDto): Promise<Listing> {
-    return this.listingsService.create(dto);
   }
 
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateListingDto,
-  ): Promise<Listing> {
-    return this.listingsService.update(id, dto);
+    @Body() updateListingDto: UpdateListingDto,
+  ) {
+    return this.listingsService.update(id, updateListingDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<Listing> {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.listingsService.remove(id);
+  }
+
+  @Post(':id/images')
+  @UseInterceptors(
+    FilesInterceptor('images', 5, { limits: { fileSize: 5 * 1024 * 1024 } }),
+  )
+  uploadImages(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFiles() files: any[],
+  ) {
+    return this.listingsService.uploadListingImages(id, files);
   }
 }

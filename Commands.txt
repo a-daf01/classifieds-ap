@@ -3,3 +3,11 @@ Commands:
 Backend: npm run start:dev
 Frontend: npm run dev
 Database: npx prisma studio
+
+Git:
+git add .
+git commit -m " "
+git push origin main
+
+Reload VS code:
+CTRL + Shift + P

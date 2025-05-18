@@ -11,3 +11,8 @@ dist/
 
 # Prisma client (if still present)
 backend/src/prisma/client/
+
+# Cloudinary (or your chosen image service)
+CLOUDINARY_CLOUD_NAME=dyedzvrij
+CLOUDINARY_API_KEY=452619849486766
+CLOUDINARY_API_SECRET=PReAc-hv6Gj_VLlFjQwKbDUefaI

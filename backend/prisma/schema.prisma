@@ -20,5 +20,14 @@ model Listing {
   description String
   price       Float
   createdAt   DateTime @default(now())
+  images   ListingImage[]
+}
+
+model ListingImage {
+  id         Int      @id @default(autoincrement())
+  url        String
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  listingId  Int
+  createdAt  DateTime @default(now())
 }
 

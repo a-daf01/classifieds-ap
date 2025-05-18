@@ -1,13 +1,15 @@
-// src/prisma.service.ts
+// backend/src/prisma.service.ts
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-// Update this path if you’ve customized your client output
-import { PrismaClient } from '@prisma/client';
+// Point at the client that Prisma just generated for you:
+import { PrismaClient } from './prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.$connect();
   }
+
   async onModuleDestroy() {
     await this.$disconnect();
   }
