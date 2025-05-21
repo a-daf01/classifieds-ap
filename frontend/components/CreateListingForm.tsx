@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, FormEvent } from 'react';
-import { useMutation, useQueryClient, UseMutationResult } from '@tanstack/react-query';
-import { Listing } from '../hooks/useListings';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 interface ListingFormInput {
   title: string;
@@ -10,84 +10,152 @@ interface ListingFormInput {
   price: number;
 }
 
-export function CreateListingForm(): React.ReactElement {
-  const qc = useQueryClient();
+interface Listing {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+}
 
-  const mutation: UseMutationResult<Listing, Error, ListingFormInput> = useMutation({
-    mutationFn: async (newListing) => {
-      console.log('📝 submitting', newListing);
-      const res = await fetch('http://localhost:3001/listings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newListing),
-      });
-      if (!res.ok) throw new Error('Failed to create listing');
-      return (await res.json()) as Listing;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['listings'] });
-    },
-  });
-
+export function CreateListingForm() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<ListingFormInput>({
     title: '',
     description: '',
     price: 0,
   });
+  const [files, setFiles] = useState<File[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const createListingMutation = useMutation<Listing, Error, ListingFormInput>({
+    mutationFn: async (newData) => {
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newData),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Failed to create listing');
+      }
+      return (await res.json()) as Listing;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['listings'] });
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
+  });
+
+  const uploadImagesMutation = useMutation<
+    void,
+    Error,
+    { listingId: number; files: File[] }
+  >({
+    mutationFn: async ({ listingId, files }) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append('images', file));
+      const res = await fetch(`/api/listings/${listingId}/images`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Failed to upload images');
+      }
+    },
+    onSuccess: (_data, { listingId }) => {
+      queryClient.invalidateQueries({ queryKey: ['listing', listingId] });
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
+  });
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutation.mutate(form);
+    setErrorMessage(null);
+    try {
+      const newListing = await createListingMutation.mutateAsync(form);
+      if (files.length > 0) {
+        try {
+          await uploadImagesMutation.mutateAsync({ listingId: newListing.id, files });
+        } catch (upErr) {
+          console.warn('Image upload failed, continuing', upErr);
+        }
+      }
+      router.push(`/listings/${newListing.id}`);
+    } catch (err) {
+      if (err instanceof Error) setErrorMessage(err.message);
+    }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded bg-white shadow">
-      <h2 className="text-xl font-semibold">New Listing</h2>
+  const isSubmitting =
+    createListingMutation.status === 'pending' ||
+    uploadImagesMutation.status === 'pending';
 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block mb-1">Title</label>
+        <label htmlFor="title" className="block text-sm font-medium">Title</label>
         <input
+          id="title"
           type="text"
           value={form.title}
           onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          className="w-full border p-2 rounded focus:ring focus:ring-brand"
           required
+          className="w-full border p-2 rounded"
         />
       </div>
 
       <div>
-        <label className="block mb-1">Description</label>
+        <label htmlFor="description" className="block text-sm font-medium">Description</label>
         <textarea
+          id="description"
           value={form.description}
           onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-          className="w-full border p-2 rounded focus:ring focus:ring-brand"
           required
+          className="w-full border p-2 rounded"
         />
       </div>
 
       <div>
-        <label className="block mb-1">Price (SAR)</label>
+        <label htmlFor="price" className="block text-sm font-medium">Price</label>
         <input
+          id="price"
           type="number"
           value={form.price}
           onChange={(e) =>
             setForm((f) => ({ ...f, price: parseFloat(e.target.value) || 0 }))
           }
-          className="w-full border p-2 rounded focus:ring focus:ring-brand"
           required
-          step="0.01"
+          className="w-full border p-2 rounded"
         />
       </div>
 
+      <div>
+        <label htmlFor="images" className="block text-sm font-medium">Images</label>
+        <input
+          id="images"
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => setFiles(Array.from(e.target.files || []))}
+          className="block w-full"
+        />
+      </div>
+
+      {errorMessage && <p className="text-red-600">{errorMessage}</p>}
+
       <button
         type="submit"
-        disabled={mutation.isPending}
+        disabled={isSubmitting}
         className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
       >
-        {mutation.isPending ? 'Creating…' : 'Create Listing'}
+        {isSubmitting ? 'Submitting…' : 'Create Listing'}
       </button>
-
-      {mutation.isError && <p className="text-red-600">Error: {mutation.error.message}</p>}
     </form>
   );
 }

@@ -66,6 +66,13 @@ export function ListingItem({ listing }: ListingItemProps) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden relative">
       <div className="p-4">
+        {listing.images?.[0] && (
+        <img
+          src={listing.images[0].url}
+          alt=""
+          className="w-full h-32 object-cover rounded-t-lg"
+        />
+      )}
         <h3 className="text-lg font-semibold">{listing.title}</h3>
         <p className="text-gray-600 truncate">{listing.description}</p>
         <div className="mt-2 flex justify-between items-center">

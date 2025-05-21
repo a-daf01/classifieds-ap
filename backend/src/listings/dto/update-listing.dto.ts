@@ -1,17 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateListingDto } from './create-listing.dto';
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsEnum } from 'class-validator';
+import { Category } from '@prisma/client';
 
 export class UpdateListingDto extends PartialType(CreateListingDto) {
   @IsOptional()
-  @IsString()
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  @IsNumber()
-  price?: number;
+  @IsEnum(Category)
+  category?: Category;
 }

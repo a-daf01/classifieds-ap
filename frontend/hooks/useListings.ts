@@ -1,11 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 
+export interface ListingImage {
+  id: number;
+  url: string;
+  createdAt: string;
+}
 export interface Listing {
   id: number;
   title: string;
   description: string;
   price: number;
   createdAt: string;
+  images: ListingImage[];
 }
 
 export function useListings() {

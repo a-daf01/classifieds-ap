@@ -1,21 +1,37 @@
-import { Controller, Get, Post, Body, Param, Delete, Patch, UseInterceptors, UploadedFiles, ParseIntPipe } from '@nestjs/common';
+// src/listings/listings.controller.ts
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  ParseIntPipe,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { ListingsService } from './listings.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('listings')
 export class ListingsController {
   constructor(private readonly listingsService: ListingsService) {}
 
   @Post()
-  create(@Body() createListingDto: CreateListingDto) {
-    return this.listingsService.create(createListingDto);
+  create(@Body() dto: CreateListingDto) {
+    // now calls service.create()
+    return this.listingsService.create(dto);
   }
 
   @Get()
-  findAll() {
-    return this.listingsService.findAll();
+  findAll(
+    @Query('category') category?: string,
+    @Query('q') q?: string,
+  ) {
+    // passes both filters
+    return this.listingsService.findAll({ category, q });
   }
 
   @Get(':id')
@@ -26,24 +42,13 @@ export class ListingsController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateListingDto: UpdateListingDto,
+    @Body() dto: UpdateListingDto,
   ) {
-    return this.listingsService.update(id, updateListingDto);
+    return this.listingsService.update(id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.listingsService.remove(id);
-  }
-
-  @Post(':id/images')
-  @UseInterceptors(
-    FilesInterceptor('images', 5, { limits: { fileSize: 5 * 1024 * 1024 } }),
-  )
-  uploadImages(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: any[],
-  ) {
-    return this.listingsService.uploadListingImages(id, files);
   }
 }

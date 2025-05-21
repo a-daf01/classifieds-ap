@@ -1,26 +1,204 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+  output = "node_modules/@prisma/client"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  output   = "../src/prisma/client"
+//
+// 1) Top-level categories
+//
+enum Category {
+  cars
+  furniture
+  jobs
+  recruitment
+  clothing
+  services
+  projects
+  games
+  devices
 }
 
+//
+// 2) Car-specific enums
+//
+enum Transmission {
+  AUTOMATIC
+  MANUAL
+  SEMI_AUTO
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+enum BodyStyle {
+  SEDAN
+  SUV
+  HATCHBACK
+  COUPE
+  CONVERTIBLE
+  TRUCK
+}
+
+enum DriveTrain {
+  FWD
+  RWD
+  AWD_4WD
+}
+
+enum Condition {
+  NEW
+  LIKE_NEW
+  USED
+  SALVAGE
+  WORN
+}
+
+//
+// 3) Furniture-specific enums
+//
+enum FurnitureCategory {
+  sofa
+  table
+  chair
+  bed
+  cabinet
+  desk
+  other
+}
+
+enum Material {
+  wood
+  metal
+  glass
+  plastic
+  upholstered
+  mixed
+}
+
+enum FurnitureStyle {
+  modern
+  contemporary
+  vintage
+  rustic
+  industrial
+}
+
+//
+// 4) Jobs & Recruitment enums
+//
+enum SalaryType {
+  yearly
+  monthly
+  hourly
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  internship
+  freelance
+}
+
+enum ExperienceLevel {
+  entry
+  mid
+  senior
+  director
+}
+
+enum RemoteOption {
+  onsite
+  remote
+  hybrid
+}
+
+//
+// 5) Clothing enums
+//
+enum ClothingType {
+  shirt
+  pants
+  dress
+  jacket
+  shoes
+  accessory
+  other
+}
+
+enum Gender {
+  men
+  women
+  unisex
+  kids
+}
+
+//
+// 6) Service enums
+//
+enum PriceType {
+  hourly
+  flat
+  per_project
+}
+
+//
+// 7) Game enums
+//
+enum Platform {
+  pc
+  ps5
+  xbox
+  switch
+  mobile
+  other
+}
+
+//
+// 8) Device enums
+//
+enum DeviceType {
+  phone
+  laptop
+  tablet
+  wearable
+  other
+}
+
+//
+// 9) Core listing + image models
+//
 model Listing {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
+  category    Category
   title       String
-  description String
-  price       Float
-  createdAt   DateTime @default(now())
-  images   ListingImage[]
+  description String?
+  price       Float?
+  createdAt   DateTime         @default(now())
+
+  images      ListingImage[]
+
+  // one-to-one back-relations (implicit)
+  carDetail         CarDetail?
+  furnitureDetail   FurnitureDetail?
+  jobDetail         JobDetail?
+  recruitmentDetail RecruitmentDetail?
+  clothingDetail    ClothingDetail?
+  serviceDetail     ServiceDetail?
+  projectDetail     ProjectDetail?
+  gameDetail        GameDetail?
+  deviceDetail      DeviceDetail?
 }
 
 model ListingImage {
@@ -31,3 +209,123 @@ model ListingImage {
   createdAt  DateTime @default(now())
 }
 
+//
+// 10) Detail tables (each with a unique FK to Listing.id)
+//
+
+model CarDetail {
+  id           Int          @id @default(autoincrement())
+  listingId    Int          @unique
+  listing      Listing      @relation(fields: [listingId], references: [id])
+
+  transmission Transmission?
+  fuelType     FuelType?
+  bodyStyle    BodyStyle?
+  driveTrain   DriveTrain?
+  condition    Condition?
+  mileage      Int?
+  year         Int?
+  color        String?
+}
+
+model FurnitureDetail {
+  id            Int               @id @default(autoincrement())
+  listingId     Int               @unique
+  listing       Listing           @relation(fields: [listingId], references: [id])
+
+  category      FurnitureCategory?
+  material      Material?
+  style         FurnitureStyle?
+  dimensions    String?
+  weight        Float?
+  color         String?
+}
+
+model JobDetail {
+  id             Int             @id @default(autoincrement())
+  listingId      Int             @unique
+  listing        Listing         @relation(fields: [listingId], references: [id])
+
+  salaryType     SalaryType?
+  salaryMin      Float?
+  salaryMax      Float?
+  employmentType EmploymentType?
+  experience     ExperienceLevel?
+  remoteOption   RemoteOption?
+  location       String?
+}
+
+model RecruitmentDetail {
+  id             Int             @id @default(autoincrement())
+  listingId      Int             @unique
+  listing        Listing         @relation(fields: [listingId], references: [id])
+
+  salaryType     SalaryType?
+  salaryMin      Float?
+  salaryMax      Float?
+  employmentType EmploymentType?
+  experience     ExperienceLevel?
+  remoteOption   RemoteOption?
+  location       String?
+  companyName    String?
+}
+
+model ClothingDetail {
+  id           Int           @id @default(autoincrement())
+  listingId    Int           @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  type         ClothingType?
+  gender       Gender?
+  size         String?
+  material     Material?
+  condition    Condition?
+  brand        String?
+  color        String?
+}
+
+model ServiceDetail {
+  id           Int           @id @default(autoincrement())
+  listingId    Int           @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  priceType    PriceType?
+  rateMin      Float?
+  rateMax      Float?
+  areaServed   String?
+}
+
+model ProjectDetail {
+  id           Int           @id @default(autoincrement())
+  listingId    Int           @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  budgetMin    Float?
+  budgetMax    Float?
+  deadline     DateTime?
+  specs        String?
+}
+
+model GameDetail {
+  id           Int           @id @default(autoincrement())
+  listingId    Int           @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  platform     Platform?
+  genre        String?
+  condition    Condition?
+  releaseYear  Int?
+}
+
+model DeviceDetail {
+  id           Int           @id @default(autoincrement())
+  listingId    Int           @unique
+  listing      Listing       @relation(fields: [listingId], references: [id])
+
+  deviceType   DeviceType?
+  brand        String?
+  model        String?
+  specs        String?
+  condition    Condition?
+  releaseYear  Int?
+}

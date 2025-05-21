@@ -1,13 +1,16 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ListingsModule } from './listings/listings.module';
 import { PrismaModule } from './prisma.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ListingsModule } from './listings/listings.module';
 
 @Module({
   imports: [
+    // ← this must go first, so all later modules see process.env
     ConfigModule.forRoot({ isGlobal: true }),
-    PrismaModule,           // ← register once here
+
+    PrismaModule,
+    CloudinaryModule,
     ListingsModule,
   ],
 })

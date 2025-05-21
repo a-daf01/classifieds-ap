@@ -54,3 +54,8 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Cloudinary (or your chosen image service)
+CLOUDINARY_CLOUD_NAME=dyedzvrij
+CLOUDINARY_API_KEY=452619849486766
+CLOUDINARY_API_SECRET=PReAc-hv6Gj_VLlFjQwKbDUefaI
